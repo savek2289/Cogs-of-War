@@ -1,24 +1,21 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using TMPro;
-using UnityEngine.UI;
 using Unity.VisualScripting;
-using System;
+using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerCharacteristics : MonoBehaviour
 {
     public static PlayerCharacteristics Instance { get; private set; }
-    
 
     [System.Serializable]
     public class Characteristic
     {
         [SerializeField] private string name;
-
         [Space(10)]
-
-        [SerializeField] Slider whiteSlider; 
+        [SerializeField] Slider whiteSlider;
         [SerializeField] private Slider colorSlider;
         [SerializeField] private TextMeshProUGUI value;
 
@@ -29,13 +26,9 @@ public class PlayerCharacteristics : MonoBehaviour
     }
 
     [SerializeField] private List<Characteristic> characteristicsData;
-
     [Space(10)]
-
     [SerializeField] private List<UIModule> modules;
-
     [Space(5)]
-
     [SerializeField] private GameObject celectFrame;
 
     private Dictionary<string, Characteristic> characteristicsMap;
@@ -61,15 +54,10 @@ public class PlayerCharacteristics : MonoBehaviour
         foreach (var characteristic in characteristicsData)
         {
             if (characteristic == null) continue;
-
             if (!characteristicsMap.ContainsKey(characteristic.Name))
-            {
                 characteristicsMap.Add(characteristic.Name, characteristic);
-            }
             else
-            {
                 Debug.LogWarning($"Duplicate characteristic name: {characteristic.Name}");
-            }
         }
 
         maxHpValue = baseHpValue;
@@ -78,14 +66,13 @@ public class PlayerCharacteristics : MonoBehaviour
         foreach (var module in modules)
         {
             Dictionary<string, object> values = module.GetValues();
-
             int moduleHpValue = values["Hp"].ConvertTo<int>();
             if ((baseHpValue + moduleHpValue) > maxHpValue)
                 maxHpValue = baseHpValue + moduleHpValue;
 
             int moduleDamageValue = values["Damage"].ConvertTo<int>();
-            if ((baseDamageValue + moduleDamageValue) > maxDamageValue) 
-                maxDamageValue = baseDamageValue + moduleDamageValue; 
+            if ((baseDamageValue + moduleDamageValue) > maxDamageValue)
+                maxDamageValue = baseDamageValue + moduleDamageValue;
         }
 
         characteristicsMap["Hp"].Value.text = baseHpValue.ToString();
@@ -104,11 +91,9 @@ public class PlayerCharacteristics : MonoBehaviour
         currentDamageValue = baseDamageValue;
     }
 
-
     public void SetChanges(string parametrName, int value)
     {
         if (characteristicsMap == null) return;
-
         if (characteristicsMap.TryGetValue(parametrName, out var characteristic))
         {
             StartCoroutine(SetChangesCoroutine(
@@ -124,9 +109,8 @@ public class PlayerCharacteristics : MonoBehaviour
     {
         lockApplyChanges = true;
 
-        bool? isAffirmative = value > 0 ? true : (value < 0 ? false : null);
-
-        if (isAffirmative == null)
+        bool? isPositive = value > 0 ? true : (value < 0 ? false : null);
+        if (isPositive == null)
         {
             lockApplyChanges = false;
             yield break;
@@ -143,19 +127,52 @@ public class PlayerCharacteristics : MonoBehaviour
             characteristicsMap["Damage"].ColorSlider.value = baseDamageValue;
 
             needToReset = false;
-        }        
+        }
 
         colorSlider.gameObject.SetActive(true);
-        colorSlider.fillRect.GetComponent<Image>().color = isAffirmative == true ? Color.green : Color.red;
-        if (isAffirmative == false)
+        Image colorImage = colorSlider.fillRect.GetComponent<Image>();
+
+        int startTextValue = Convert.ToInt32(text.text);
+        int endTextValue = startTextValue + value;
+
+        float startWhite = whiteSlider.value;
+        float startColor = colorSlider.value;
+        float endWhite, endColor;
+
+        if (isPositive == true)
         {
-            whiteSlider.value += value;
+            endWhite = startWhite;
+            endColor = startColor + value;
         }
         else
         {
-            colorSlider.value += value;
+            endWhite = startWhite + value;
+            endColor = startColor;
         }
-        text.text = Convert.ToString(Convert.ToInt32(text.text) + value);
+
+        Color startImageColor = colorImage.color;
+        Color targetColor = isPositive == true ? Color.green : Color.red;
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / duration;
+
+            whiteSlider.value = Mathf.Lerp(startWhite, endWhite, t);
+            colorSlider.value = Mathf.Lerp(startColor, endColor, t);
+            colorImage.color = Color.Lerp(startImageColor, targetColor, t);
+
+            int currentText = Mathf.RoundToInt(Mathf.Lerp(startTextValue, endTextValue, t));
+            text.text = currentText.ToString();
+
+            yield return null;
+        }
+
+        whiteSlider.value = endWhite;
+        colorSlider.value = endColor;
+        colorImage.color = targetColor;
+        text.text = endTextValue.ToString();
 
         lockApplyChanges = false;
     }
@@ -167,29 +184,72 @@ public class PlayerCharacteristics : MonoBehaviour
 
     private IEnumerator ApplyAllChanges()
     {
-        if (characteristicsMap["Hp"].ColorSlider.fillRect.GetComponent<Image>().color == Color.red)
+        while (lockApplyChanges)
+            yield return null;
+
+        lockApplyChanges = true;
+
+        List<Coroutine> activeCoroutines = new List<Coroutine>();
+
+        foreach (var pair in characteristicsMap)
         {
-            currentDamageValue = Convert.ToInt32(characteristicsMap["Hp"].WhiteSlider.value);
-            characteristicsMap["Hp"].ColorSlider.value = currentDamageValue;
-        }
-        else
-        {
-            currentHpValue = Convert.ToInt32(characteristicsMap["Hp"].ColorSlider.value);
-            characteristicsMap["Hp"].WhiteSlider.value = currentHpValue;
-        }
-        
-        if (characteristicsMap["Damage"].ColorSlider.fillRect.GetComponent<Image>().color == Color.red)
-        {
-            currentDamageValue = Convert.ToInt32(characteristicsMap["Damage"].WhiteSlider.value);
-            characteristicsMap["Damage"].ColorSlider.value = currentDamageValue;
-        }
-        else
-        {
-            currentDamageValue = Convert.ToInt32(characteristicsMap["Damage"].ColorSlider.value);
-            characteristicsMap["Damage"].WhiteSlider.value = currentDamageValue;
+            string paramName = pair.Key;
+            Characteristic characteristic = pair.Value;
+
+            Image colorImage = characteristic.ColorSlider.fillRect.GetComponent<Image>();
+            Color currentColor = colorImage.color;
+
+            // ќпредел€ем, нужно ли что-то анимировать
+            if (currentColor == Color.green)
+            {
+                // ”величивали Ц белый слайдер догон€ет цветной
+                float targetValue = characteristic.ColorSlider.value;
+                activeCoroutines.Add(StartCoroutine(ApplySingleCharacteristic(
+                    characteristic.WhiteSlider, targetValue, colorImage, currentColor)));
+            }
+            else if (currentColor == Color.red)
+            {
+                // ”меньшали Ц цветной слайдер догон€ет белый
+                float targetValue = characteristic.WhiteSlider.value;
+                activeCoroutines.Add(StartCoroutine(ApplySingleCharacteristic(
+                    characteristic.ColorSlider, targetValue, colorImage, currentColor)));
+            }
+            // ≈сли цвет уже белый Ц ничего не делаем
         }
 
-        yield return null;
+        // ∆дЄм завершени€ всех параллельных анимаций
+        foreach (var coroutine in activeCoroutines)
+            yield return coroutine;
+
+        // ќбновл€ем текущие значени€ (можно вз€ть из белого слайдера, так как теперь они синхронны)
+        if (characteristicsMap.TryGetValue("Hp", out var hpChar))
+            currentHpValue = (int)hpChar.WhiteSlider.value;
+        if (characteristicsMap.TryGetValue("Damage", out var dmgChar))
+            currentDamageValue = (int)dmgChar.WhiteSlider.value;
+
+        lockApplyChanges = false;
+    }
+
+    private IEnumerator ApplySingleCharacteristic(Slider movingSlider, float targetValue, Image colorImage, Color startColor)
+    {
+        float startSliderValue = movingSlider.value;
+        Color targetColor = Color.white;
+        float duration = 0.5f; // можно вынести в параметр или константу
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / duration;
+
+            movingSlider.value = Mathf.Lerp(startSliderValue, targetValue, t);
+            colorImage.color = Color.Lerp(startColor, targetColor, t);
+
+            yield return null;
+        }
+
+        movingSlider.value = targetValue;
+        colorImage.color = targetColor;
     }
 
     public void SetNeedToReset(bool parametr) => needToReset = parametr;
@@ -212,7 +272,6 @@ public class PlayerCharacteristics : MonoBehaviour
         }
 
         targetModule.enabled = false;
-
         celectedModule = modules.IndexOf(targetModuleScript);
 
         if (celectedModule == -1)
