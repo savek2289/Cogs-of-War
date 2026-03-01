@@ -539,47 +539,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 653614906}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3e9e7bbf2ef47f54590a42fe0a465b72, type: 3}
+  m_Script: {fileID: 11500000, guid: c4e09454087504f41902b05cce7c1988, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  onPointerEnter:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 739802026}
-        m_TargetAssemblyTypeName: UnityEngine.Animator, UnityEngine
-        m_MethodName: Play
-        m_Mode: 5
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: HalfFadeIn
-          m_BoolArgument: 0
-        m_CallState: 2
-  onPointerExit:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 739802026}
-        m_TargetAssemblyTypeName: UnityEngine.Animator, UnityEngine
-        m_MethodName: Play
-        m_Mode: 5
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: HalfFadeOut
-          m_BoolArgument: 0
-        m_CallState: 2
-  minHoverTime: 0.5
-  minAnimationInterval: 0.1
-  blockEventsDuringDrag: 1
-  dragReleaseDelay: 0.5
-  ignoreQuickHovers: 1
-  targetButton: {fileID: 1809259337}
-  buttonCheckDelay: 0.3
-  showDebugInfo: 0
+  myEvents: []
 --- !u!224 &653614911
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2800,44 +2763,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e9e7bbf2ef47f54590a42fe0a465b72, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  onPointerEnter:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1000243808}
-        m_TargetAssemblyTypeName: UnityEngine.Animator, UnityEngine
-        m_MethodName: Play
-        m_Mode: 5
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: HalfFadeIn
-          m_BoolArgument: 0
-        m_CallState: 2
-  onPointerExit:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1000243808}
-        m_TargetAssemblyTypeName: UnityEngine.Animator, UnityEngine
-        m_MethodName: Play
-        m_Mode: 5
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: HalfFadeOut
-          m_BoolArgument: 0
-        m_CallState: 2
-  minHoverTime: 0.5
-  minAnimationInterval: 0.1
-  blockEventsDuringDrag: 1
-  dragReleaseDelay: 0.5
-  ignoreQuickHovers: 1
-  targetButton: {fileID: 1990258426}
-  buttonCheckDelay: 0.3
-  showDebugInfo: 0
 --- !u!222 &2049126871
 CanvasRenderer:
   m_ObjectHideFlags: 0
