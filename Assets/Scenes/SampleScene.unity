@@ -324,8 +324,8 @@ Canvas:
   m_GameObject: {fileID: 177976316}
   m_Enabled: 1
   serializedVersion: 3
-  m_RenderMode: 0
-  m_Camera: {fileID: 0}
+  m_RenderMode: 1
+  m_Camera: {fileID: 963194227}
   m_PlaneDistance: 100
   m_PixelPerfect: 0
   m_ReceivesEvents: 1
@@ -437,9 +437,9 @@ GameObject:
   m_Component:
   - component: {fileID: 653614911}
   - component: {fileID: 653614909}
-  - component: {fileID: 653614910}
   - component: {fileID: 653614908}
   - component: {fileID: 653614907}
+  - component: {fileID: 653614912}
   m_Layer: 0
   m_Name: CloseButtonCollider
   m_TagString: Untagged
@@ -530,19 +530,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 653614906}
   m_CullTransparentMesh: 1
---- !u!114 &653614910
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 653614906}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c4e09454087504f41902b05cce7c1988, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  myEvents: []
 --- !u!224 &653614911
 RectTransform:
   m_ObjectHideFlags: 0
@@ -562,6 +549,56 @@ RectTransform:
   m_AnchoredPosition: {x: -25, y: 0}
   m_SizeDelta: {x: 50, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &653614912
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 653614906}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e9e7bbf2ef47f54590a42fe0a465b72, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  onPointerEnter:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 739802026}
+        m_TargetAssemblyTypeName: UnityEngine.Animator, UnityEngine
+        m_MethodName: Play
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: HalfFadeIn
+          m_BoolArgument: 0
+        m_CallState: 2
+  onPointerExit:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 739802026}
+        m_TargetAssemblyTypeName: UnityEngine.Animator, UnityEngine
+        m_MethodName: Play
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: HalfFadeOut
+          m_BoolArgument: 0
+        m_CallState: 2
+  minHoverTime: 0.15
+  minAnimationInterval: 0.1
+  blockEventsDuringDrag: 1
+  dragReleaseDelay: 0.5
+  ignoreQuickHovers: 1
+  targetButton: {fileID: 1809259337}
+  buttonCheckDelay: 0.3
+  showDebugInfo: 0
 --- !u!1 &739802024
 GameObject:
   m_ObjectHideFlags: 0
@@ -1060,7 +1097,7 @@ Transform:
   m_GameObject: {fileID: 963194225}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalPosition: {x: -83, y: 1, z: -8.23}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1107,7 +1144,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: -450, y: 0}
+  m_AnchoredPosition: {x: -450.00003, y: 0}
   m_SizeDelta: {x: 450, y: 0}
   m_Pivot: {x: 0, y: 0.5}
 --- !u!114 &1000243806
@@ -1671,7 +1708,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 653614910}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: ScrollViewHoverHandler, Assembly-CSharp
         m_MethodName: OnExitAnimationComplete
         m_Mode: 1
@@ -2763,6 +2800,44 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e9e7bbf2ef47f54590a42fe0a465b72, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  onPointerEnter:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1000243808}
+        m_TargetAssemblyTypeName: UnityEngine.Animator, UnityEngine
+        m_MethodName: Play
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: HalfFadeIn
+          m_BoolArgument: 0
+        m_CallState: 2
+  onPointerExit:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1000243808}
+        m_TargetAssemblyTypeName: UnityEngine.Animator, UnityEngine
+        m_MethodName: Play
+        m_Mode: 5
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: HalfFadeOut
+          m_BoolArgument: 0
+        m_CallState: 2
+  minHoverTime: 0.15
+  minAnimationInterval: 0.1
+  blockEventsDuringDrag: 1
+  dragReleaseDelay: 0.5
+  ignoreQuickHovers: 1
+  targetButton: {fileID: 1990258426}
+  buttonCheckDelay: 0.3
+  showDebugInfo: 0
 --- !u!222 &2049126871
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -3238,7 +3313,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 15, y: -36.8}
+  m_AnchoredPosition: {x: 15, y: -36.800003}
   m_SizeDelta: {x: 275, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2143691333
