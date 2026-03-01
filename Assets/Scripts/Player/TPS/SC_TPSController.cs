@@ -4,87 +4,114 @@ using UnityEngine;
 public class SC_TPSController : MonoBehaviour
 {
     [Header("Movement")]
-    [SerializeField] private float speed = 7.5f;
-    [SerializeField] private float jumpSpeed = 8.0f;
-    [SerializeField] private float gravity = 20.0f;
-
-    [Header("Camera")]
-    [SerializeField] private Transform playerCameraParent;
-    [SerializeField] private float lookSpeed = 2.0f;
-    [SerializeField] private float lookXLimit = 60.0f;
+    [SerializeField] private float walkSpeed = 5f;
+    [SerializeField] private float runSpeed = 9f;
+    [SerializeField] private float jumpForce = 8f;
+    [SerializeField] private float gravity = 20f;
+    [SerializeField] private float airControlPercent = 0.5f;
+     
+    [Header("Rotation")]
     [SerializeField] private float rotationSmoothTime = 0.1f;
 
-    private CharacterController characterController;
-    private Vector3 moveDirection;
-    private Vector2 rotation;
+    [Header("Camera")]
+    [SerializeField] private Transform cameraParent;
+    [SerializeField] private float mouseSensitivity = 2f;
+    [SerializeField] private float verticalLookLimit = 60f;
+
+    private Animator anim;
+    private CharacterController controller;
+    private Vector3 velocity;
+    private float verticalVelocity;
+    private float currentYRotation;
     private float rotationVelocity;
+    private float cameraXRotation;
 
-    [SerializeField] private bool canMove = true;
-
-    void Start()
+    private void Start()
     {
-        characterController = GetComponent<CharacterController>();
-        rotation.y = transform.eulerAngles.y;
+        controller = GetComponent<CharacterController>();
+        anim = GetComponent<Animator>();
+
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
 
-    void Update()
+    private void Update()
     {
-        HandleCameraRotation();
+        HandleCamera();
         HandleMovement();
     }
 
-    private void HandleCameraRotation()
+    private void HandleCamera()
     {
-        if (!canMove) return;
+        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
+        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
 
-        rotation.y += Input.GetAxis("Mouse X") * lookSpeed;
-        rotation.x += -Input.GetAxis("Mouse Y") * lookSpeed;
-        rotation.x = Mathf.Clamp(rotation.x, -lookXLimit, lookXLimit);
+        currentYRotation += mouseX;
 
-        playerCameraParent.localRotation = Quaternion.Euler(rotation.x, 0, 0);
+        cameraXRotation -= mouseY;
+        cameraXRotation = Mathf.Clamp(cameraXRotation, -verticalLookLimit, verticalLookLimit);
+
+        cameraParent.localRotation = Quaternion.Euler(cameraXRotation, currentYRotation, 0f);
     }
 
     private void HandleMovement()
     {
-        if (characterController.isGrounded)
+        bool isGrounded = controller.isGrounded;
+
+        if (isGrounded && verticalVelocity < 0)
+            verticalVelocity = -2f;
+
+        float horizontal = Input.GetAxisRaw("Horizontal");
+        float vertical = Input.GetAxisRaw("Vertical");
+
+        Vector3 inputDirection = new Vector3(horizontal, 0f, vertical).normalized;
+
+        if (inputDirection.magnitude > 0)
+            anim.SetBool("IsRun", true);
+        else
+            anim.SetBool("IsRun", false);
+
+        bool isRunning = Input.GetKey(KeyCode.LeftShift);
+
+        anim.SetFloat("Speed", isRunning ? 1.2f : 0.8f);
+
+        float targetSpeed = isRunning ? runSpeed : walkSpeed;
+
+        if (inputDirection.magnitude >= 0.1f)
         {
-            float horizontal = Input.GetAxis("Horizontal");
-            float vertical = Input.GetAxis("Vertical");
+            float targetAngle = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg + currentYRotation;
+            float smoothAngle = Mathf.SmoothDampAngle(
+                transform.eulerAngles.y,
+                targetAngle,
+                ref rotationVelocity,
+                rotationSmoothTime
+            );
 
-            Vector3 inputDirection = new Vector3(horizontal, 0f, vertical).normalized;
+            transform.rotation = Quaternion.Euler(0f, smoothAngle, 0f);
 
-            if (inputDirection.magnitude >= 0.1f)
-            {
-                // GTA-style: направление относительно камеры
-                float targetAngle = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg + rotation.y;
-                float smoothAngle = Mathf.SmoothDampAngle(
-                    transform.eulerAngles.y,
-                    targetAngle,
-                    ref rotationVelocity,
-                    rotationSmoothTime
-                );
+            Vector3 moveDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
 
-                transform.rotation = Quaternion.Euler(0f, smoothAngle, 0f);
+            float control = isGrounded ? 1f : airControlPercent;
 
-                Vector3 moveDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
-                moveDirection = moveDir.normalized * speed;
-            }
-            else
-            {
-                // МГНОВЕННАЯ остановка
-                moveDirection.x = 0;
-                moveDirection.z = 0;
-            }
-
-            if (Input.GetButton("Jump") && canMove)
-            {
-                moveDirection.y = jumpSpeed;
-            }
+            velocity.x = moveDir.x * targetSpeed * control;
+            velocity.z = moveDir.z * targetSpeed * control;
+        }
+        else
+        {
+            // 🔥 ВАЖНО:
+            // Если НЕТ ввода — обнуляем горизонтальную скорость
+            velocity.x = 0f;
+            velocity.z = 0f;
         }
 
-        moveDirection.y -= gravity * Time.deltaTime;
-        characterController.Move(moveDirection * Time.deltaTime);
+        if (Input.GetButtonDown("Jump") && isGrounded)
+        {
+            verticalVelocity = jumpForce;
+        }
+
+        verticalVelocity -= gravity * Time.deltaTime;
+        velocity.y = verticalVelocity;
+
+        controller.Move(velocity * Time.deltaTime);
     }
 }

@@ -2,35 +2,42 @@ using UnityEngine;
 
 public class SC_CameraCollision : MonoBehaviour
 {
-    [SerializeField] private Transform referenceTransform;
-    [SerializeField] private float collisionOffset = 0.3f;
-    [SerializeField] private float cameraSpeed = 15f;
+    [SerializeField] private Transform target;
+    [SerializeField] private float collisionRadius = 0.3f;
+    [SerializeField] private float smoothSpeed = 15f;
+    [SerializeField] private LayerMask collisionMask; // 🔥 выбираемые слои
 
-    private Vector3 defaultPos;
-    private Vector3 directionNormalized;
-    private Transform parentTransform;
+    private Vector3 defaultLocalPos;
     private float defaultDistance;
+    private Vector3 direction;
 
-    void Start()
+    private void Start()
     {
-        defaultPos = transform.localPosition;
-        directionNormalized = defaultPos.normalized;
-        parentTransform = transform.parent;
-        defaultDistance = Vector3.Distance(defaultPos, Vector3.zero);
+        defaultLocalPos = transform.localPosition;
+        defaultDistance = defaultLocalPos.magnitude;
+        direction = defaultLocalPos.normalized;
     }
 
-    void LateUpdate()
+    private void LateUpdate()
     {
-        Vector3 currentPos = defaultPos;
         RaycastHit hit;
+        Vector3 desiredPosition = defaultLocalPos;
 
-        Vector3 dirTmp = parentTransform.TransformPoint(defaultPos) - referenceTransform.position;
+        Vector3 worldDir = transform.parent.TransformPoint(defaultLocalPos) - target.position;
 
-        if (Physics.SphereCast(referenceTransform.position, collisionOffset, dirTmp, out hit, defaultDistance))
+        if (Physics.SphereCast(
+            target.position,
+            collisionRadius,
+            worldDir.normalized,
+            out hit,
+            defaultDistance,
+            collisionMask // 🔥 используем маску
+        ))
         {
-            currentPos = directionNormalized * (hit.distance - collisionOffset);
+            desiredPosition = direction * (hit.distance - collisionRadius);
         }
 
-        transform.localPosition = Vector3.Lerp(transform.localPosition, currentPos, Time.deltaTime * cameraSpeed);
+        transform.localPosition =
+            Vector3.Lerp(transform.localPosition, desiredPosition, Time.deltaTime * smoothSpeed);
     }
 }
