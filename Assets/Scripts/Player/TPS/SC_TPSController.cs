@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
@@ -13,12 +14,17 @@ public class SC_TPSController : MonoBehaviour
     [Header("Rotation")]
     [SerializeField] private float rotationSmoothTime = 0.1f;
 
+    [Header("Attack")]
+    [SerializeField] float attackDelay = 0.4f;    
+    [SerializeField] float attackCooldown = 1.2f;  
+
     [Header("Camera")]
     [SerializeField] private Transform cameraParent;
     [SerializeField] private float mouseSensitivity = 2f;
     [SerializeField] private float verticalLookLimit = 60f;
 
-    private Animator anim;
+    private bool canAttack = true;
+    private ModelParent modelParent;
     private CharacterController controller;
     private Vector3 velocity;
     private float verticalVelocity;
@@ -29,7 +35,7 @@ public class SC_TPSController : MonoBehaviour
     private void Start()
     {
         controller = GetComponent<CharacterController>();
-        anim = GetComponent<Animator>();
+        modelParent = GetComponentInChildren<ModelParent>();
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
@@ -39,6 +45,9 @@ public class SC_TPSController : MonoBehaviour
     {
         HandleCamera();
         HandleMovement();
+
+        if (Input.GetButton("Fire1"))
+            HandleAttack();
     }
 
     private void HandleCamera()
@@ -53,7 +62,13 @@ public class SC_TPSController : MonoBehaviour
 
         cameraParent.localRotation = Quaternion.Euler(cameraXRotation, currentYRotation, 0f);
     }
+    private void HandleAttack()
+    {
+        if (!canAttack)
+            return;
 
+        StartCoroutine(AttackRoutine());
+    }
     private void HandleMovement()
     {
         bool isGrounded = controller.isGrounded;
@@ -63,17 +78,26 @@ public class SC_TPSController : MonoBehaviour
 
         float horizontal = Input.GetAxisRaw("Horizontal");
         float vertical = Input.GetAxisRaw("Vertical");
+        bool isRunning = Input.GetKey(KeyCode.LeftShift);
 
+         
         Vector3 inputDirection = new Vector3(horizontal, 0f, vertical).normalized;
 
         if (inputDirection.magnitude > 0)
-            anim.SetBool("IsRun", true);
+        {
+            for (int i = 0; i < modelParent.childModel.Count; i++)
+                if (modelParent.childModel[i].name == "LegsR" || modelParent.childModel[i].name == "LegsL")
+                {
+                    modelParent.childModel[i].GetComponentInChildren<Animator>().Play("Run");
+                    modelParent.childModel[i].GetComponentInChildren<Animator>().SetFloat("Speed", isRunning ? 1.2f : 0.8f);
+                }
+        }
         else
-            anim.SetBool("IsRun", false);
-
-        bool isRunning = Input.GetKey(KeyCode.LeftShift);
-
-        anim.SetFloat("Speed", isRunning ? 1.2f : 0.8f);
+        {
+            for (int i = 0; i < modelParent.childModel.Count; i++)
+                if (modelParent.childModel[i].name == "LegsR" || modelParent.childModel[i].name == "LegsL")
+                    modelParent.childModel[i].GetComponentInChildren<Animator>().Play("Idle");
+        }
 
         float targetSpeed = isRunning ? runSpeed : walkSpeed;
 
@@ -114,4 +138,59 @@ public class SC_TPSController : MonoBehaviour
 
         controller.Move(velocity * Time.deltaTime);
     }
+    private void DealDamage()
+    {
+        Debug.Log("Урон нанесён");
+    }
+    private Animator GetHandAnimator(string handName)
+    {
+        for (int i = 0; i < modelParent.childModel.Count; i++)
+        {
+            if (modelParent.childModel[i].name == handName)
+            {
+                return modelParent.childModel[i]
+                    .GetComponentInChildren<Animator>();
+            }
+        }
+        return null;
+    }
+    private IEnumerator AttackRoutine()
+    {
+        canAttack = false;
+
+        int j = Random.Range(0, 2);
+
+        Animator targetAnimator = null;
+
+        if (j == 0)
+        {
+            targetAnimator = GetHandAnimator("HandL");
+            if (targetAnimator != null)
+                targetAnimator.Play("Attack1");
+        }
+        else
+        {
+            string randomHandR = "HandR";
+            targetAnimator = GetHandAnimator(randomHandR);
+
+            if (targetAnimator != null)
+                targetAnimator.Play("Attack2");
+            string randomHandL = "HandL";
+            targetAnimator = GetHandAnimator(randomHandL);
+
+            if (targetAnimator != null)
+                targetAnimator.Play("Attack2");
+        }
+
+        // Задержка перед нанесением урона
+        yield return new WaitForSeconds(attackDelay);
+
+        DealDamage();
+
+        // Кулдаун
+        yield return new WaitForSeconds(attackCooldown);
+
+        canAttack = true;
+    }
+
 }
